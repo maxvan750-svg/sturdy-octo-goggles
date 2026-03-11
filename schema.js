@@ -1,25 +1,48 @@
-const Joi = require('joi');
+const mongoose = require('mongoose');
 
-// Validation schema for posts
-const postSchema = Joi.object({
-  title: Joi.string().min(5).max(100).required(),
-  content: Joi.string().min(10).required(),
-  author: Joi.string().required(),
-  createdAt: Joi.date().default(Date.now)
+// User Schema
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
 });
 
-// Validation schema for triggers
-const triggerSchema = Joi.object({
-  name: Joi.string().required(),
-  type: Joi.string().valid('email', 'webhook', 'sms').required(),
-  active: Joi.boolean().default(true)
+// Post Schema
+const postSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  createdAt: { type: Date, default: Date.now }
 });
 
-// Validation schema for configurations
-const configSchema = Joi.object({
-  settingName: Joi.string().required(),
-  settingValue: Joi.string().required(),
-  updatedAt: Joi.date().default(Date.now)
+// Account Schema
+const accountSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  accountType: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = { postSchema, triggerSchema, configSchema };
+// Trigger Schema
+const triggerSchema = new mongoose.Schema({
+  event: { type: String, required: true },
+  action: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Queue Schema
+const queueSchema = new mongoose.Schema({
+  task: { type: String, required: true },
+  status: { type: String, default: 'pending' },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Models
+const User = mongoose.model('User', userSchema);
+const Post = mongoose.model('Post', postSchema);
+const Account = mongoose.model('Account', accountSchema);
+const Trigger = mongoose.model('Trigger', triggerSchema);
+const Queue = mongoose.model('Queue', queueSchema);
+
+module.exports = { User, Post, Account, Trigger, Queue };
+
